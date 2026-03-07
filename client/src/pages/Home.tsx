@@ -71,7 +71,7 @@ export default function Home() {
                 </span>
               </div>
               <h1 className="font-tactical text-white leading-none mb-4" style={{ fontSize: "clamp(2.4rem, 5.5vw, 4.5rem)", fontWeight: 900, letterSpacing: "0.02em" }}>
-                <span className="block">WEATHER INTEL</span>
+                <span className="block">WEATHER INTELLIGENCE</span>
                 <span className="block glow-cyan" style={{ color: "#00D4FF" }}>FOR CAPTAINS</span>
                 <span className="block text-white" style={{ opacity: 0.9 }}>WHO NEED TO KNOW</span>
               </h1>

@@ -143,18 +143,25 @@ export default function RegionDetail() {
             {region?.name ?? regionId}
           </h1>
           <p className="font-data" style={{ fontSize: "0.7rem", color: "#7B9BB5" }}>{region?.description}</p>
-          {lastUpdated && (
-            <div className="font-data mt-2" style={{ fontSize: "0.6rem", color: "#7B9BB5" }}>
-              Updated: {lastUpdated}
-              <button
-                onClick={refresh}
-                className="ml-3 cursor-pointer"
-                style={{ color: "#00D4FF", background: "none", border: "none", fontSize: "0.6rem", fontFamily: "inherit" }}
-              >
-                REFRESH
-              </button>
+          <div className="flex items-center gap-4 mt-3">
+            <div className="font-data" style={{ fontSize: "0.6rem", color: "#7B9BB5", letterSpacing: "0.08em" }}>
+              <span style={{ color: "#00D4FF" }}>MODEL RUN:</span>{" "}
+              {new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}{" "}
+              {new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", timeZoneName: "short" })}
             </div>
-          )}
+            {lastUpdated && (
+              <div className="font-data" style={{ fontSize: "0.6rem", color: "#7B9BB5" }}>
+                <span style={{ color: "#39FF14" }}>LIVE DATA:</span>{" "}{lastUpdated}
+                <button
+                  onClick={refresh}
+                  className="ml-3 cursor-pointer"
+                  style={{ color: "#00D4FF", background: "none", border: "none", fontSize: "0.6rem", fontFamily: "inherit" }}
+                >
+                  REFRESH
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
