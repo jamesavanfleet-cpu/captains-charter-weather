@@ -1,42 +1,44 @@
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/NotFound";
+// App.tsx — Captain's Charter Weather
+// Routes: Home, Florida, Bahamas, RegionDetail, Advisories, CrossingPlanner, BookBriefing, About
 import { Route, Switch } from "wouter";
-import ErrorBoundary from "./components/ErrorBoundary";
-import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
+import Navigation from "@/components/Navigation";
+import Home from "@/pages/Home";
+import Florida from "@/pages/Florida";
+import Bahamas from "@/pages/Bahamas";
+import RegionDetail from "@/pages/RegionDetail";
+import MarineAdvisories from "@/pages/MarineAdvisories";
+import CrossingPlanner from "@/pages/CrossingPlanner";
+import BookBriefing from "@/pages/BookBriefing";
+import About from "@/pages/About";
+import { Toaster } from "@/components/ui/sonner";
 
-
-function Router() {
+function NotFound() {
   return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
-    </Switch>
+    <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: "#0A0E14" }}>
+      <div className="font-data text-xs mb-2" style={{ color: "#FF8C00", letterSpacing: "0.2em" }}>404 — SIGNAL LOST</div>
+      <div className="font-tactical text-white text-3xl font-bold mb-4">Page Not Found</div>
+      <a href="/" className="font-data text-sm" style={{ color: "#00D4FF" }}>Return to Home Base</a>
+    </div>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
-function App() {
+export default function App() {
   return (
-    <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
+    <div style={{ background: "#0A0E14", minHeight: "100vh" }}>
+      <Navigation />
+      <Toaster />
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/florida" component={Florida} />
+        <Route path="/bahamas" component={Bahamas} />
+        <Route path="/florida/:regionId" component={RegionDetail} />
+        <Route path="/bahamas/:regionId" component={RegionDetail} />
+        <Route path="/about" component={About} />
+        <Route path="/advisories" component={MarineAdvisories} />
+        <Route path="/book-briefing" component={BookBriefing} />
+        <Route path="/crossing-planner" component={CrossingPlanner} />
+        <Route component={NotFound} />
+      </Switch>
+    </div>
   );
 }
-
-export default App;
