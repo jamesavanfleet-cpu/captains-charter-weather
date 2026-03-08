@@ -6,8 +6,9 @@
 //   1. expandedPorts tracks individual port indices (not row indices).
 //   2. Clicking a port header toggles ONLY that port.
 //   3. The toggle handler uses a functional update (prev => ...) -- never a direct setState.
-//   4. No useEffect resets expandedPorts after mount. If you need region-change reset,
-//      use the useState initializer or a key prop on the parent, not useEffect.
+//   4. No useEffect resets expandedPorts after mount.
+//   5. The grid uses `align-items: start` so expanding one card does NOT stretch
+//      its row-siblings. Each card grows downward independently.
 import { useState } from "react";
 import { Link, useParams } from "wouter";
 import { useRegionWeather } from "@/hooks/useWeather";
@@ -49,65 +50,67 @@ function PortCard({ port, isExpanded, onToggle }: PortCardProps) {
       </button>
 
       {/* Expanded content */}
-      <div style={{ maxHeight: isExpanded ? "900px" : "0", overflow: "hidden", transition: "max-height 0.35s ease" }}>
-        {port.loading && (
-          <div className="px-4 pb-4">
-            <div className="font-data text-center py-4" style={{ fontSize: "0.65rem", color: "#7B9BB5" }}>LOADING...</div>
-          </div>
-        )}
-        {!port.loading && !port.error && (
-          <div className="px-4 pb-4">
-            {/* Condition tiles */}
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              {[
-                { label: "Temperature", value: `${port.tempF}°F` },
-                { label: "Sea State", value: port.waveHeightFt > 0 ? `${port.waveHeightFt} ft` : "< 1 ft" },
-                { label: "Wind", value: `${port.windDirLabel} ${port.windSpeedKnots} kt` },
-                { label: "Rain Chance", value: "—" },
-              ].map(tile => (
-                <div key={tile.label} className="p-3" style={{ background: "rgba(10,14,20,0.6)", border: "1px solid #1A2D42" }}>
-                  <div className="font-tactical text-white" style={{ fontSize: "1.1rem", fontWeight: 700 }}>{tile.value}</div>
-                  <div className="data-label">{tile.label}</div>
-                </div>
-              ))}
+      {isExpanded && (
+        <div>
+          {port.loading && (
+            <div className="px-4 pb-4">
+              <div className="font-data text-center py-4" style={{ fontSize: "0.65rem", color: "#7B9BB5" }}>LOADING...</div>
             </div>
-
-            {/* Wind arrow + extra stats */}
-            <div className="flex items-center gap-4 mb-4">
-              <WindArrow deg={port.windDirDeg} color="#00D4FF" size={28} />
-              <div className="flex gap-4">
-                <div>
-                  <div className="font-data text-white" style={{ fontSize: "0.8rem" }}>{port.pressureInHg} inHg</div>
-                  <div className="data-label">PRESSURE</div>
-                </div>
-                <div>
-                  <div className="font-data text-white" style={{ fontSize: "0.8rem" }}>{port.humidity}%</div>
-                  <div className="data-label">HUMIDITY</div>
-                </div>
-                {port.sstF > 0 && (
-                  <div>
-                    <div className="font-data text-white" style={{ fontSize: "0.8rem" }}>{port.sstF}°F</div>
-                    <div className="data-label">SST</div>
+          )}
+          {!port.loading && !port.error && (
+            <div className="px-4 pb-4">
+              {/* Condition tiles */}
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                {[
+                  { label: "Temperature", value: `${port.tempF}°F` },
+                  { label: "Sea State", value: port.waveHeightFt > 0 ? `${port.waveHeightFt} ft` : "< 1 ft" },
+                  { label: "Wind", value: `${port.windDirLabel} ${port.windSpeedKnots} kt` },
+                  { label: "Rain Chance", value: "—" },
+                ].map(tile => (
+                  <div key={tile.label} className="p-3" style={{ background: "rgba(10,14,20,0.6)", border: "1px solid #1A2D42" }}>
+                    <div className="font-tactical text-white" style={{ fontSize: "1.1rem", fontWeight: 700 }}>{tile.value}</div>
+                    <div className="data-label">{tile.label}</div>
                   </div>
-                )}
+                ))}
+              </div>
+
+              {/* Wind arrow + extra stats */}
+              <div className="flex items-center gap-4 mb-4">
+                <WindArrow deg={port.windDirDeg} color="#00D4FF" size={28} />
+                <div className="flex gap-4">
+                  <div>
+                    <div className="font-data text-white" style={{ fontSize: "0.8rem" }}>{port.pressureInHg} inHg</div>
+                    <div className="data-label">PRESSURE</div>
+                  </div>
+                  <div>
+                    <div className="font-data text-white" style={{ fontSize: "0.8rem" }}>{port.humidity}%</div>
+                    <div className="data-label">HUMIDITY</div>
+                  </div>
+                  {port.sstF > 0 && (
+                    <div>
+                      <div className="font-data text-white" style={{ fontSize: "0.8rem" }}>{port.sstF}°F</div>
+                      <div className="data-label">SST</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Condition label */}
+              <div
+                className="font-data px-3 py-2 text-center"
+                style={{ fontSize: "0.65rem", letterSpacing: "0.1em", color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}` }}
+              >
+                {port.condition}
               </div>
             </div>
-
-            {/* Condition label */}
-            <div
-              className="font-data px-3 py-2 text-center"
-              style={{ fontSize: "0.65rem", letterSpacing: "0.1em", color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}` }}
-            >
-              {port.condition}
+          )}
+          {port.error && (
+            <div className="px-4 pb-4">
+              <div className="font-data text-center py-4" style={{ fontSize: "0.65rem", color: "#FF8C00" }}>DATA UNAVAILABLE</div>
             </div>
-          </div>
-        )}
-        {port.error && (
-          <div className="px-4 pb-4">
-            <div className="font-data text-center py-4" style={{ fontSize: "0.65rem", color: "#FF8C00" }}>DATA UNAVAILABLE</div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -133,14 +136,6 @@ export default function RegionDetail() {
       return next;
     });
   };
-
-  // Group ports into rows of 3 for the grid layout
-  const rows: { port: PortWeather; globalIndex: number }[][] = [];
-  for (let i = 0; i < ports.length; i += 3) {
-    rows.push(
-      ports.slice(i, i + 3).map((port, j) => ({ port, globalIndex: i + j }))
-    );
-  }
 
   return (
     <div style={{ paddingTop: "3.5rem" }}>
@@ -180,7 +175,7 @@ export default function RegionDetail() {
         </div>
       </div>
 
-      {/* Port accordion */}
+      {/* Port grid */}
       <div className="py-8" style={{ background: "#0A0E14" }}>
         <div className="container">
           {loading && ports.length === 0 ? (
@@ -189,22 +184,23 @@ export default function RegionDetail() {
               <span className="font-data" style={{ fontSize: "0.65rem", color: "#7B9BB5" }}>LOADING PORT DATA...</span>
             </div>
           ) : (
-            <div className="flex flex-col gap-0">
-              {rows.map((row, rowIndex) => (
-                <div key={rowIndex} className="grid grid-cols-1 md:grid-cols-3 gap-0" style={{ borderBottom: "1px solid #1A2D42" }}>
-                  {row.map(({ port, globalIndex }) => (
-                    <PortCard
-                      key={port.portName}
-                      port={port}
-                      isExpanded={expandedPorts.has(globalIndex)}
-                      onToggle={() => togglePort(globalIndex)}
-                    />
-                  ))}
-                  {/* Fill empty slots in last row */}
-                  {row.length < 3 && Array.from({ length: 3 - row.length }).map((_, i) => (
-                    <div key={`empty-${i}`} style={{ border: "1px solid #1A2D42", background: "rgba(13,21,32,0.4)" }} />
-                  ))}
-                </div>
+            // KEY FIX: align-items: start means each card only takes the height it needs.
+            // Expanding one card does NOT stretch its row-siblings.
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                alignItems: "start",
+                border: "1px solid #1A2D42",
+              }}
+            >
+              {ports.map((port, i) => (
+                <PortCard
+                  key={port.portName}
+                  port={port}
+                  isExpanded={expandedPorts.has(i)}
+                  onToggle={() => togglePort(i)}
+                />
               ))}
             </div>
           )}
