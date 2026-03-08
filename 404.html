@@ -4,9 +4,11 @@
   <meta charset="UTF-8" />
   <title>Captain's Charter Weather</title>
   <script>
-    // GitHub Pages SPA redirect: store the full path in sessionStorage,
-    // then redirect to the root so index.html loads the React app,
-    // which reads sessionStorage and navigates to the correct route.
+    // GitHub Pages SPA routing fix.
+    // When GitHub Pages serves a 404 for a client-side route like /florida,
+    // this page stores the full path in sessionStorage and redirects to /,
+    // where index.html reads it back and replaces history so the React router
+    // navigates to the correct page without a visible flash.
     var path = window.location.pathname + window.location.search + window.location.hash;
     sessionStorage.setItem('spa_redirect', path);
     window.location.replace('/');
