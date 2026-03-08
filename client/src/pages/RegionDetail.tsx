@@ -1,5 +1,13 @@
 // RegionDetail — Captain's Charter Weather
-// Shows all ports in a region as accordion rows (3 per row, expand together)
+// Each port card expands/collapses independently when clicked.
+// No regression bars. Starts collapsed so the user taps to reveal data.
+//
+// ACCORDION CONTRACT -- DO NOT CHANGE WITHOUT READING THIS:
+//   1. expandedPorts tracks individual port indices (not row indices).
+//   2. Clicking a port header toggles ONLY that port.
+//   3. The toggle handler uses a functional update (prev => ...) -- never a direct setState.
+//   4. No useEffect resets expandedPorts after mount. If you need region-change reset,
+//      use the useState initializer or a key prop on the parent, not useEffect.
 import { useState } from "react";
 import { Link, useParams } from "wouter";
 import { useRegionWeather } from "@/hooks/useWeather";
@@ -22,6 +30,7 @@ function PortCard({ port, isExpanded, onToggle }: PortCardProps) {
         className="w-full flex items-center justify-between px-4 py-3 cursor-pointer"
         style={{ background: "none", border: "none", textAlign: "left" }}
         onClick={onToggle}
+        aria-expanded={isExpanded}
       >
         <div>
           <div className="font-tactical text-white" style={{ fontSize: "0.95rem", fontWeight: 700 }}>{port.portName}</div>
@@ -41,11 +50,13 @@ function PortCard({ port, isExpanded, onToggle }: PortCardProps) {
 
       {/* Expanded content */}
       <div style={{ maxHeight: isExpanded ? "900px" : "0", overflow: "hidden", transition: "max-height 0.35s ease" }}>
+        {port.loading && (
+          <div className="px-4 pb-4">
+            <div className="font-data text-center py-4" style={{ fontSize: "0.65rem", color: "#7B9BB5" }}>LOADING...</div>
+          </div>
+        )}
         {!port.loading && !port.error && (
           <div className="px-4 pb-4">
-            {/* Status bar */}
-            <div style={{ height: 1, background: `linear-gradient(90deg, transparent, ${cfg.color}, transparent)`, marginBottom: "12px" }} />
-
             {/* Condition tiles */}
             <div className="grid grid-cols-2 gap-2 mb-4">
               {[
@@ -109,22 +120,26 @@ export default function RegionDetail() {
 
   const { ports, loading, lastUpdated, refresh } = useRegionWeather(regionId);
 
-  // Track which rows are expanded (each row = 3 ports)
-  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  // Track which individual ports are expanded by their index.
+  // Starts empty (all collapsed) so the user taps to reveal data.
+  const [expandedPorts, setExpandedPorts] = useState<Set<number>>(new Set());
 
-  const toggleRow = (rowIndex: number) => {
-    setExpandedRows(prev => {
+  const togglePort = (portIndex: number) => {
+    // IMPORTANT: always use functional update so we never close over stale state.
+    setExpandedPorts(prev => {
       const next = new Set(prev);
-      if (next.has(rowIndex)) next.delete(rowIndex);
-      else next.add(rowIndex);
+      if (next.has(portIndex)) next.delete(portIndex);
+      else next.add(portIndex);
       return next;
     });
   };
 
-  // Group ports into rows of 3
-  const rows: PortWeather[][] = [];
+  // Group ports into rows of 3 for the grid layout
+  const rows: { port: PortWeather; globalIndex: number }[][] = [];
   for (let i = 0; i < ports.length; i += 3) {
-    rows.push(ports.slice(i, i + 3));
+    rows.push(
+      ports.slice(i, i + 3).map((port, j) => ({ port, globalIndex: i + j }))
+    );
   }
 
   return (
@@ -177,12 +192,12 @@ export default function RegionDetail() {
             <div className="flex flex-col gap-0">
               {rows.map((row, rowIndex) => (
                 <div key={rowIndex} className="grid grid-cols-1 md:grid-cols-3 gap-0" style={{ borderBottom: "1px solid #1A2D42" }}>
-                  {row.map((port) => (
+                  {row.map(({ port, globalIndex }) => (
                     <PortCard
                       key={port.portName}
                       port={port}
-                      isExpanded={expandedRows.has(rowIndex)}
-                      onToggle={() => toggleRow(rowIndex)}
+                      isExpanded={expandedPorts.has(globalIndex)}
+                      onToggle={() => togglePort(globalIndex)}
                     />
                   ))}
                   {/* Fill empty slots in last row */}
