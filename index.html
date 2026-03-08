@@ -2,6 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+  <script>
+    // GitHub Pages SPA redirect reader
+    (function() {
+      var redirect = sessionStorage.getItem('spa_redirect');
+      if (redirect) {
+        sessionStorage.removeItem('spa_redirect');
+        window.history.replaceState(null, null, redirect);
+      }
+    })();
+  </script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
     <title>Captain's Charter Weather</title>
     <meta name="description" content="Professional marine weather intelligence for Florida and Bahamas charter captains by James Van Fleet, former Chief Meteorologist of Royal Caribbean." />

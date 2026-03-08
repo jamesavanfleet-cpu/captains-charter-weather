@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Captain's Charter Weather</title>
+  <script>
+    // GitHub Pages SPA redirect: store the full path in sessionStorage,
+    // then redirect to the root so index.html loads the React app,
+    // which reads sessionStorage and navigates to the correct route.
+    var path = window.location.pathname + window.location.search + window.location.hash;
+    sessionStorage.setItem('spa_redirect', path);
+    window.location.replace('/');
+  </script>
+</head>
+<body></body>
+</html>
